@@ -5,86 +5,94 @@ const Sketch = (W, H) => (p) => {
   let { 
     // Constants
     RADIANS,
+    DEGREES,
+    CENTER,
     PI, 
     HALF_PI: PI_2,
     QUARTER_PI: PI_4,
     TWO_PI,
 
-    // Time
-    year, month, day, hour, minute, second,
   } = p
 
-  const tf = new (Transformer(p))()
+  const MSG = 'lies'
+  let t, counter = 0
 
   p.setup = function() {
     p.createCanvas(W, H)
-    p.angleMode(RADIANS)
+    p.angleMode(DEGREES)
+    p.textAlign(CENTER, CENTER)
+    p.textSize(12)
   }
 
   p.draw = () => {
-    // const angle = p.abs(p.mouseX)/50
-    // const angle = -p.atan((p.mouseY - H/2)/(p.mouseX - W/2))
-    const v0 = p.createVector(1, 0)
-    const v1 = p.createVector(p.mouseX - W/2, p.mouseY - H/2)
-    let angle = -v0.angleBetween(v1).toFixed(2)
-    if (v1.y <= 0) {
-      angle = -TWO_PI-angle
-    }
-    const radius = p.dist(W/2, H/2, p.mouseX, p.mouseY) / 3
-    const freq = (n) => p.millis() / (1000/n)
-    const freq_2 = freq(0.5)
-    const freq1 = freq(1)
-    const freq2 = freq(2)
-
-    p.background(200)
-    p.textSize(20)
-
-    tf.push()
-
-    // Start at the center
-    tf.translate(W/2, H/2)
-    tf.rotate(freq_2*TWO_PI)
-
-    const makeHands = (baseRadius, num) => {
-      tf.push()
-      for(let _i of range(num)) {
-        const i = _i + 1 
-        const handLength = baseRadius/i
-        const gearColor = (1 - i/num) * 255
-        const handColor = i/num * 255
-        const handThickness = num/i
-        const handAngle = i % 2 == 0 ? angle*i : -angle*i
-  
-        // hand
-        p.fill(handColor)
-        tf.rotate(handAngle*i)
-        p.rect(0, -handThickness/2, handLength, handThickness)
-        // p.push()
-        // p.fill(0)
-        // p.text(`${tf.x.toFixed(1)} ${tf.y.toFixed(1)}`, 0, -handThickness)
-        // p.pop()
-        // gear
-        p.fill(gearColor)
-        p.ellipse(0,0,10, 10)
-  
-        tf.translate(handLength, 0)
-        tf.rotate(freq_2*PI/i)
+    p.background(255);
+    t = p.millis()/1000
+    counter += 2
+    let msg = MSG
+    
+    
+    p.push()
+    p.translate(p.width/2, p.height/2)
+    let index = 0
+    for(let r = 50; r < 200; r+=15) {
+      let diff = 45
+      
+      for(let angle = 0; angle < 360; angle+=diff) {
+        let x1 = p.cos(angle) * r
+        let y1 = p.sin(angle) * r
+        let x2 = p.cos(angle+diff) * r
+        let y2 = p.sin(angle+diff) * r
+        let cx1 = p.cos(angle     +5) * (r-20)
+        let cy1 = p.sin(angle     +5) * (r-20)
+        let cx2 = p.cos(angle+diff-5) * (r-20)
+        let cy2 = p.sin(angle+diff-5) * (r-20)
+        let mx = (x1+x2)/2
+        let my = (y1+y2)/2
+        
+        // bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2)
+        let px = x1
+        let py = y1
+        let d = p.dist(x1, y1, x2, y2)
+        let dreal = 0
+        let ts = []
+        let fdiff = p.map(d, 0, 200, 0.2, 0.02)
+        for(let f = 0; f < 1-fdiff; f+=fdiff) {
+          // let f = map(n, 0, d, 0, 1)
+          let x = p.bezierPoint(x1, cx1, cx2, x2, f)
+          let y = p.bezierPoint(y1, cy1, cy2, y2, f)
+          
+          let letter 
+          if(index < counter) {
+            letter = msg[(index+p.floor(t))%msg.length]
+          }
+          else {
+            letter = ' '
+          }
+          let nextLetter = msg[(index+1)%msg.length]
+          let lwidth = p.textWidth(letter)
+          
+          
+          index += 1
+          // n += lwidth*2
+          dreal += p.dist(px, py, x, y)
+          if((dreal - ((dreal/50)+1)*50) < 0.5) {
+            p.push()
+            p.translate(x, y)
+            // rotate(90-atan2(x, y))
+            p.rotate(p.atan2(y, x))
+            p.text(letter, 0, 0)
+            // circle(0, 0, 2)
+            p.pop()
+            ts.push(f)
+          } 
+          px = x
+          py = y
+        }
+        
       }
-      const x = tf.x, y = tf.y
-      tf.pop()
-      return {x, y}
+      
     }
-    const {x,y} = makeHands(radius, 6)
-    tf.pop()
-
-    tf.push()
-    tf.translate(W/2, H/2)
-    tf.rotate(freq_2*TWO_PI + PI)
-    const {x: x2, y: y2 } = makeHands(radius, 4)
-    tf.pop()
-
-    // Connecting line using coordinates returned from 'makeHands'
-    p.line(x,y,x2,y2)
+    p.pop()
   } 
 }
 export default Sketch

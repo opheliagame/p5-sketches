@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import dynamic from 'next/dynamic';
-import Const from '../utils/constants';
+import Const from '../../utils/constants';
+import { NextReactP5Wrapper } from '@p5-wrapper/next';
 
-const P5Wrapper = dynamic(import('react-p5-wrapper'), {
-  loading: () => <p>Loading...</p>,
-  ssr: false,
-});
+// const P5Wrapper = dynamic(import('react-p5-wrapper'), {
+//   loading: () => <p>Loading...</p>,
+//   ssr: false,
+// });
 
 class P5Page extends Component {
 
@@ -27,8 +28,8 @@ class P5Page extends Component {
         </div>
       );
     }
-    const sketch = require(`../sketches/d${id}`).default(600, 600);
-    return <P5Wrapper sketch={sketch}/>
+    const sketch = require(`../../sketches/d${id}`).default(600, 600);
+    return <NextReactP5Wrapper sketch={sketch}/>
   }
 
   render() {    

@@ -1,30 +1,35 @@
 const Sketch = (W, H) => (p) => {
 
-  let PI = p.PI
-  let PI_2 = p.HALF_PI
-  let PI_4 = p.QUARTER_PI
-  let TWO_PI = p.TWO_PI
+  const MSG1 = 'loading '
+  const MSG2 = 'just a minute '
+  let amp1, amp2, t, cols
 
   p.setup = () => {
-    p.createCanvas(W, H)
-    p.angleMode(p.RADIANS)
+    p.createCanvas(W, H);
+    p.textAlign(p.CENTER, p.CENTER)
+    p.textSize(12)
+    amp1 = p.textWidth(MSG1)
+    amp2 = p.textWidth(MSG2)
+    cols = Math.floor(p.width/amp1)
   }
 
   p.draw = () => {
-    p.background(220)
-
-    const c1 = p.map(p.constrain(p.mouseX, 0, W), 0, W, 0, 255)
-    const c2 = p.map(p.constrain(p.mouseY, 0, H), 0, H, 0, 255)
-    p.fill(c1,c2, 255)
-    p.strokeWeight(4)
-    if (p.mouseIsPressed) {
-      p.stroke(255)
-    } else {
-      p.stroke(0)
+    p.background(255);
+    t = p.millis()/500
+    p.randomSeed(1)
+  
+    for(let j = 0; j < p.height; j+=12){
+      let xoff = p.sin(p.radians(j)+t)*12*5
+   
+      let i = xoff
+      while(i < p.width+amp1) {
+        let xdiff = (i <= p.width/2) ? amp2 : amp1
+        let msg = xdiff === amp1 ? MSG1 : MSG2 
+        p.text(msg, i-xdiff/2, j)
+      
+        i += xdiff
+      }
     }
-
-    p.textSize(H/3)
-    p.text('Hello!', 20, H/2)
   } 
 }
 export default Sketch;

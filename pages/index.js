@@ -6,8 +6,10 @@ import Main from '../layouts/main';
 import { Router } from '../routes';
 import { range } from '../utils/utils';
 import Const from '../utils/constants';
+import Link from 'next/link';
+import { NextReactP5Wrapper } from '@p5-wrapper/next';
 
-const P5Wrapper = dynamic(import('react-p5-wrapper'), {
+const P5Wrapper = dynamic(import('@p5-wrapper/react'), {
   ssr: false,
   loading: () => (
     <div className="sketch-holder">Loading...</div>
@@ -32,9 +34,10 @@ class IndexPage extends Component {
               return (
                 <div key={`sketch-${ind}`} className="sketch-container">
                   <div className="sketch-holder">
-                    <P5Wrapper sketch={sketch(200, 200)}/>
+                    {/* <P5Wrapper sketch={sketch(200, 200)}/> */}
+                    <NextReactP5Wrapper sketch={sketch(200, 200)} />
                   </div>
-                  <a className="primary-button" onClick={() => Router.pushRoute(`/s/${ind}`) }>View {ind}</a>
+                  <Link className="primary-button" href={`/s/${ind}`}>View {ind}</Link>
                 </div>
               )
             })}

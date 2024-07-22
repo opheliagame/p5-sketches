@@ -16,68 +16,92 @@ const Sketch = (W, H) => (p) => {
     year, month, day, hour, minute, second, millis,
   } = p
 
-  const tf = new (Transformer(p))()
+  const MSG1 = 'तल'
+  const MSG2 = 'ताल'
+  let w1, w2, t
+  let cols, rows
+  let taal, level = 0
 
   p.setup = () => {
     p.createCanvas(W, H)
-    p.angleMode(RADIANS)
+    p.textAlign(p.LEFT, p.CENTER)
+    p.textSize(15)
+    w1 = p.textWidth(MSG1)
+    w2 = p.textWidth(MSG2)
+    cols = p.floor(p.width/w1)
+    rows = p.floor(p.height/15)
+    // rows = 6
+    // currRow = rows-2
+    
+    taal = Array.from(Array(rows), () => new Array(cols).fill(0))
+    // noLoop()
+    p.frameRate(30)
   }
 
-  const minY = H * 0.4, maxY = H * 0.8
-  const dividedByW = 1/W
 
   p.draw = () => {
-    if (p.mouseIsPressed) {
-      p.background(240)
-      p.stroke(0)
-      p.fill(0)
-    } else {
-      p.background(20)
-      p.stroke(255)
-      p.fill(255)
-    }
-
-    p.strokeWeight(1)
-    p.textSize(18)
-
-    const mouseX = p.constrain(p.mouseX, 0, W)
-    const mouseY = p.constrain(p.mouseY, minY, maxY)
-
-    p.line(0,mouseY,W,mouseY)
-
-    const lhRatio = 3
-    const linesNum = 7
-
-    let totalHeightLeft = H - mouseY
-    let prevHeight = mouseY
-    let prevFirstRatio = mouseX * dividedByW
-
-    for (let _i = 0; _i < linesNum; _i++) {
-      const level = prevHeight + totalHeightLeft/lhRatio
-      const currentRatio = prevFirstRatio/2
-      const restRatioSeg = (1 - currentRatio)/(_i+1)      
-      for (let _i2 = 0; _i2 < _i+1 ; _i2++) {
-        const ratio2 = currentRatio + restRatioSeg * (_i2+1)
-        p.line(W*ratio2, level, W*prevFirstRatio, prevHeight)
+    p.background(255);
+    t = p.millis()/1000
+    // randomSeed(20)
+    
+    for(let j = 0; j < p.height; j+=15) {
+      let i = 0
+      while(i < p.width) {
+        let col = p.floor(i/p.width*cols)
+        let row = p.floor(j/p.height*rows)
+        let msg = taal[row][col] === 0 ? MSG1 : MSG2
+        let xdiff = taal[row][col] === 0 ? w1 : w2
+        let amp = p.map(j, 0, p.height, 30, 2)
+        
+        let ydiff = p.sin(p.radians(i)+t) * amp
+        p.push()
+        p.translate(i, j+ydiff)
+        if(msg === MSG1) {
+          p.fill(0)
+          
+        } else {
+          p.fill(0, 0, 255)
+          
+        }
+        p.text(msg, 0, 0) 
+        p.pop()
+        
+        i+=xdiff
       }
-      p.line(W*currentRatio, level, W*prevFirstRatio, prevHeight)
-      p.line(0, level, W, level)
-
-      p.text(_i, 20, level)
-
-      prevFirstRatio = currentRatio
-      totalHeightLeft = H - level
-      prevHeight = level
     }
+      
+    if(p.frameCount % 10 === 0) {
+      // taal[currRow] = [...taal[currRow+1]]
+      for(let j = 0; j < rows; j++) {
+        if (j > rows-8) {
+          seedLastRow(j, 3)
+        } else {
+          let currRow = j
+          let spread = p.map(currRow, 0, rows, 1.0, 0.2)
+          if(currRow > p.floor(level)) taal[currRow] = new Array(cols).fill(0)
+          for(let i = 1; i < cols-1; i++) {
+            if(taal[currRow+1][i] === 1 && p.random() < spread) {
+              taal[currRow][i-1] = 1
+              taal[currRow][i+1] = 1
+            } else {
+              // taal[currRow][i] = 0
+              // taal[currRow][i+2] = 0
+            }
+          }
+        }
+        
+      }
+      level += 0.1
+      // currRow = abs(currRow - 1) % (rows-1)
+    }
+  }
 
-    const r = p.mouseIsPressed ? 16 : 10
-    p.ellipse(mouseX,mouseY,r,r)
-    const tx = p.constrain(mouseX - 40, 20, W - 100)
-    const yoffset = p.mouseIsPressed ? 20 : 10
-    const ty = mouseY - yoffset
-    const tsize = p.mouseIsPressed ? 28 : 22
-    p.textSize(tsize)
-    p.text('unknown', tx, ty)
+  function seedLastRow(row, N) {
+    taal[row] = new Array(cols).fill(0)
+    for(let n = 0; n < N; n++) {
+      let col = p.floor(p.random(cols))
+      taal[row][col] = 1
+    }
   } 
 }
 export default Sketch

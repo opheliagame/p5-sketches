@@ -4,7 +4,7 @@ import Link from 'next/link';
 const Main = ({ children }) => (
   <div className="main">
     <div className="logo">
-      <Link href="/"><a>daily p5</a></Link>
+      <Link href="/">daily p5</Link>
     </div>
 
     { children }
