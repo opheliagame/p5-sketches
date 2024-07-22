@@ -3,7 +3,6 @@ import Head from 'next/head';
 import dynamic from 'next/dynamic';
 
 import Main from '../layouts/main';
-import { Router } from '../routes';
 import { range } from '../utils/utils';
 import Const from '../utils/constants';
 import Link from 'next/link';
